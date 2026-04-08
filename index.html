@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyAI Pro — AI Powered Study Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0A0A0F;
+  --bg2:#111118;
+  --bg3:#1A1A24;
+  --card:#16161F;
+  --border:#2A2A38;
+  --border2:#353548;
+  --text:#F0F0FF;
+  --muted:#7A7A9A;
+  --muted2:#4A4A6A;
+  --orange:#FF6B2B;
+  --orange2:#FF8C54;
+  --orangeGlow:rgba(255,107,43,0.15);
+  --green:#22C55E;
+  --blue:#3B82F6;
+  --purple:#A855F7;
+  --yellow:#F59E0B;
+  --red:#EF4444;
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* ANIMATED BG */
+.bg-orbs{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.18;animation:float 8s ease-in-out infinite}
+.orb1{width:400px;height:400px;background:var(--orange);top:-100px;right:-100px;animation-delay:0s}
+.orb2{width:300px;height:300px;background:#7C3AED;bottom:-80px;left:-80px;animation-delay:3s}
+.orb3{width:200px;height:200px;background:#0EA5E9;top:40%;left:30%;animation-delay:5s}
+@keyframes float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-30px) scale(1.05)}}
+
+/* GRID PATTERN */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;
+  background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);
+  background-size:40px 40px;opacity:.3;pointer-events:none
+}
+
+.wrap{position:relative;z-index:1;max-width:480px;margin:0 auto;padding:0 16px 60px}
+
+/* HERO */
+.hero{text-align:center;padding:40px 0 24px;animation:fadeUp .6s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+.hero-pill{display:inline-flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border2);border-radius:50px;padding:6px 14px;margin-bottom:20px;font-size:.72rem;font-weight:600;letter-spacing:.04em;color:var(--muted)}
+.hero-pill-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse2 1.5s ease-in-out infinite}
+@keyframes pulse2{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(34,197,94,.4)}50%{opacity:.7;box-shadow:0 0 0 6px rgba(34,197,94,0)}}
+
+.hero h1{font-size:2.4rem;font-weight:800;line-height:1.08;letter-spacing:-.04em;margin-bottom:12px}
+.hero h1 .grad{background:linear-gradient(135deg,var(--orange),#FF3CAC);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{font-size:.88rem;color:var(--muted);line-height:1.6;max-width:300px;margin:0 auto 24px}
+
+/* FEATURE PILLS */
+.feat-pills{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:28px}
+.feat-pill{background:var(--bg3);border:1px solid var(--border);border-radius:50px;padding:5px 12px;font-size:.72rem;font-weight:600;color:var(--muted)}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:24px;animation:fadeUp .6s ease .1s both}
+.stat-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center}
+.stat-num{font-size:1.3rem;font-weight:800;background:linear-gradient(135deg,var(--orange),var(--orange2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-lbl{font-size:.62rem;color:var(--muted);margin-top:2px;font-weight:500}
+
+/* DEMO BANNER */
+.demo-banner{background:linear-gradient(135deg,rgba(34,197,94,.12),rgba(34,197,94,.05));border:1px solid rgba(34,197,94,.3);border-radius:14px;padding:16px 18px;margin-bottom:20px;animation:fadeUp .6s ease .2s both;cursor:pointer;transition:border-color .2s}
+.demo-banner:hover{border-color:rgba(34,197,94,.6)}
+.demo-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.demo-tag{background:rgba(34,197,94,.2);color:var(--green);font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:50px;letter-spacing:.06em}
+.demo-timer{font-size:.72rem;color:var(--muted);font-weight:500}
+.demo-title{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:3px}
+.demo-sub{font-size:.78rem;color:var(--muted)}
+.demo-btn{width:100%;background:var(--green);color:#fff;border:none;padding:12px;border-radius:10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;margin-top:12px;letter-spacing:.02em;transition:opacity .2s}
+.demo-btn:hover{opacity:.9}
+
+/* PAYMENT GATE */
+#payGate{animation:fadeUp .6s ease .15s both}
+.gate-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:24px 20px;margin-bottom:14px;position:relative;overflow:hidden}
+.gate-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--orange),#FF3CAC,var(--purple))}
+.gate-price-row{display:flex;align-items:baseline;gap:10px;margin-bottom:4px}
+.gate-price{font-size:2.8rem;font-weight:800;background:linear-gradient(135deg,var(--orange),var(--orange2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.gate-orig{font-size:.9rem;color:var(--muted2);text-decoration:line-through}
+.gate-badge{background:linear-gradient(135deg,var(--yellow),#F97316);color:#000;font-size:.68rem;font-weight:800;padding:3px 9px;border-radius:50px;letter-spacing:.04em}
+.gate-plan{font-size:.75rem;color:var(--muted);margin-bottom:4px;font-weight:500}
+.gate-sub{font-size:.82rem;color:var(--muted);margin-bottom:18px}
+
+.feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:20px}
+.fg-item{display:flex;align-items:center;gap:7px;font-size:.78rem;font-weight:500;color:var(--muted);background:var(--bg3);padding:7px 10px;border-radius:8px;border:1px solid var(--border)}
+.fg-dot{width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0}
+
+/* UPI BOX */
+.upi-box{background:var(--bg3);border:1px dashed var(--border2);border-radius:12px;padding:14px 16px;margin-bottom:14px}
+.upi-label{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.upi-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.upi-id{font-family:'Caveat',cursive;font-size:1.3rem;font-weight:700;color:var(--orange);word-break:break-all}
+.copy-upi{background:var(--orange);color:#fff;border:none;padding:7px 14px;border-radius:8px;font-size:.72rem;font-weight:700;cursor:pointer;flex-shrink:0;transition:opacity .2s}
+.copy-upi:hover{opacity:.85}
+.wp-note{font-size:.72rem;color:var(--muted);margin-top:8px}
+.wp-note b{color:var(--text)}
+
+.txn-input{width:100%;padding:13px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.9rem;color:var(--text);outline:none;margin-bottom:12px;transition:border-color .2s}
+.txn-input:focus{border-color:var(--orange)}
+.txn-input::placeholder{color:var(--muted2)}
+
+.unlock-btn{width:100%;background:linear-gradient(135deg,var(--orange),#FF3CAC);color:#fff;border:none;padding:15px;border-radius:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:opacity .2s,transform .1s;letter-spacing:.02em}
+.unlock-btn:hover{opacity:.92}
+.unlock-btn:active{transform:scale(.98)}
+
+/* MAIN APP */
+#mainApp{display:none;animation:fadeUp .5s ease both}
+
+/* KEY BAR */
+.key-bar{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:14px;cursor:pointer;transition:border-color .2s}
+.key-bar:hover{border-color:var(--border2)}
+.key-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;transition:background .3s}
+.key-dot.on{background:var(--green);box-shadow:0 0 8px var(--green)}
+.key-dot.off{background:var(--red);box-shadow:0 0 8px var(--red)}
+.key-bar-text{flex:1;font-size:.78rem;font-weight:600;color:var(--muted)}
+.key-change{background:var(--bg3);color:var(--text);border:1px solid var(--border);padding:5px 12px;border-radius:7px;font-size:.7rem;font-weight:600;cursor:pointer}
+
+/* TABS */
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:16px}
+.tab{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 4px;text-align:center;font-size:.68rem;font-weight:700;cursor:pointer;color:var(--muted);transition:all .2s;line-height:1.4}
+.tab-icon{font-size:1.1rem;display:block;margin-bottom:3px}
+.tab.active{background:var(--orange);border-color:var(--orange);color:#fff;box-shadow:0 4px 20px rgba(255,107,43,.3)}
+.tab-panel{display:none}
+.tab-panel.active{display:block;animation:fadeUp .3s ease both}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:14px;position:relative;overflow:hidden}
+.card-accent{position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--orange),transparent)}
+.card h2{font-size:1rem;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.card-icon{font-size:1.1rem}
+
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+select,textarea{width:100%;padding:11px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.88rem;color:var(--text);outline:none;transition:border-color .2s;-webkit-appearance:none}
+select:focus,textarea:focus{border-color:var(--orange)}
+textarea{height:85px;resize:vertical;line-height:1.5}
+
+.word-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.word-btn{padding:9px 4px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;text-align:center;transition:all .15s;color:var(--muted)}
+.word-btn.active,.word-btn:hover{background:var(--orange);color:#fff;border-color:var(--orange)}
+
+/* STYLE TOGGLE */
+.style-toggle{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.sty-btn{padding:9px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;text-align:center;transition:all .15s;color:var(--muted)}
+.sty-btn.active{background:var(--purple);border-color:var(--purple);color:#fff}
+
+/* ACTION BTNS */
+.btn-orange{width:100%;background:linear-gradient(135deg,var(--orange),#FF3CAC);color:#fff;border:none;padding:14px;border-radius:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;transition:opacity .2s,transform .1s;letter-spacing:.02em;margin-top:4px}
+.btn-orange:hover{opacity:.9}
+.btn-orange:active{transform:scale(.98)}
+.btn-orange:disabled{opacity:.4;cursor:not-allowed}
+.btn-blue{width:100%;background:linear-gradient(135deg,var(--blue),var(--purple));color:#fff;border:none;padding:14px;border-radius:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;transition:opacity .2s;letter-spacing:.02em;margin-top:4px}
+.btn-blue:hover{opacity:.9}
+
+/* OUTPUT */
+.out-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:14px;display:none;animation:fadeUp .3s ease both}
+.out-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.out-title{font-size:.92rem;font-weight:700}
+.copy-btn2{background:var(--bg3);color:var(--text);border:1px solid var(--border);padding:7px 13px;border-radius:8px;font-size:.72rem;font-weight:600;cursor:pointer;transition:all .15s}
+.copy-btn2:hover{border-color:var(--orange);color:var(--orange)}
+.out-text{font-size:.86rem;line-height:1.8;color:var(--text);white-space:pre-wrap;word-break:break-word;max-height:450px;overflow-y:auto}
+.out-text.hw{font-family:'Caveat',cursive;font-size:1.08rem;line-height:2;color:#E0E8FF}
+.out-text::-webkit-scrollbar{width:3px}
+.out-text::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* LOADING */
+.loading-wrap{text-align:center;padding:24px 0;display:none}
+.spinner{display:inline-block;width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-wrap p{font-size:.82rem;color:var(--muted);margin-top:10px}
+.loading-dots{display:inline-block}
+.loading-dots::after{content:'';animation:dots 1.5s steps(4,end) infinite}
+@keyframes dots{0%,100%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}}
+
+/* PYQ */
+.pyq-item{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:13px 15px;margin-bottom:8px;cursor:pointer;transition:all .2s}
+.pyq-item:hover{border-color:var(--blue);transform:translateX(2px)}
+.pyq-name{font-size:.88rem;font-weight:600;color:var(--text);margin-bottom:3px}
+.pyq-src{font-size:.72rem;color:var(--muted)}
+.pyq-link{display:inline-block;margin-top:7px;background:var(--blue);color:#fff;font-size:.7rem;font-weight:700;padding:5px 12px;border-radius:7px;text-decoration:none;transition:opacity .2s}
+.pyq-link:hover{opacity:.85}
+
+/* PDF UPLOAD */
+.upload-zone{border:2px dashed var(--border2);border-radius:14px;padding:24px;text-align:center;cursor:pointer;transition:all .2s}
+.upload-zone:hover{border-color:var(--orange);background:var(--orangeGlow)}
+.upload-icon{font-size:2rem;margin-bottom:8px}
+.upload-zone p{font-size:.82rem;color:var(--muted);margin-bottom:12px}
+.upload-zone input{display:none}
+.upload-label{background:var(--bg3);color:var(--text);border:1px solid var(--border2);padding:9px 20px;border-radius:9px;font-size:.82rem;font-weight:600;cursor:pointer;display:inline-block;transition:all .2s}
+.upload-label:hover{border-color:var(--orange);color:var(--orange)}
+#pdfStatus{margin-top:10px;font-size:.8rem;font-weight:600;min-height:18px}
+
+/* HW LIMIT */
+.hw-limit{display:flex;align-items:center;justify-content:space-between;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin-bottom:12px}
+.hw-limit-text{font-size:.75rem;color:var(--muted)}
+.hw-limit-num{font-size:.75rem;font-weight:700;color:var(--yellow)}
+.hw-bar{width:100%;height:3px;background:var(--border);border-radius:3px;margin-top:5px;overflow:hidden}
+.hw-bar-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--yellow));border-radius:3px;transition:width .3s}
+
+/* MODAL */
+#apiModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(8px);z-index:999;align-items:center;justify-content:center;padding:20px}
+#apiModal.open{display:flex}
+.modal-box{background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:28px 22px;max-width:400px;width:100%;animation:fadeUp .25s ease both;position:relative}
+.modal-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:20px 20px 0 0;background:linear-gradient(90deg,var(--orange),#FF3CAC,var(--purple))}
+.modal-box h3{font-size:1.05rem;font-weight:700;margin-bottom:5px}
+.modal-box p{font-size:.8rem;color:var(--muted);margin-bottom:16px;line-height:1.6}
+.modal-box a{color:var(--orange);text-decoration:none;font-weight:600}
+.modal-input{width:100%;padding:12px 15px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.88rem;color:var(--text);outline:none;margin-bottom:12px;transition:border-color .2s}
+.modal-input:focus{border-color:var(--orange)}
+.modal-input::placeholder{color:var(--muted2)}
+.modal-save{width:100%;background:linear-gradient(135deg,var(--orange),#FF3CAC);color:#fff;border:none;padding:13px;border-radius:10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;margin-bottom:8px}
+.modal-cancel{width:100%;background:none;border:none;font-size:.8rem;color:var(--muted);cursor:pointer;text-decoration:underline}
+
+/* DEMO MODAL */
+#demoModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(10px);z-index:998;align-items:center;justify-content:center;padding:20px}
+#demoModal.open{display:flex}
+.demo-modal-box{background:var(--card);border:1px solid rgba(34,197,94,.3);border-radius:20px;padding:28px 22px;max-width:400px;width:100%;animation:fadeUp .25s ease both;position:relative}
+.demo-modal-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:20px 20px 0 0;background:linear-gradient(90deg,var(--green),#0EA5E9)}
+.demo-modal-box h3{font-size:1.1rem;font-weight:700;margin-bottom:6px}
+.demo-modal-box p{font-size:.82rem;color:var(--muted);margin-bottom:18px;line-height:1.6}
+.demo-features{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:18px}
+.df-item{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:9px 10px;font-size:.75rem;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:6px}
+.df-check{color:var(--green);font-size:.8rem}
+.demo-timer-big{text-align:center;background:var(--bg3);border-radius:12px;padding:14px;margin-bottom:16px}
+.demo-timer-val{font-size:1.8rem;font-weight:800;color:var(--green);font-family:monospace}
+.demo-timer-lbl{font-size:.72rem;color:var(--muted);margin-top:3px}
+.start-demo-btn{width:100%;background:linear-gradient(135deg,var(--green),#0EA5E9);color:#fff;border:none;padding:14px;border-radius:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;margin-bottom:8px;transition:opacity .2s}
+.start-demo-btn:hover{opacity:.9}
+.demo-cancel{width:100%;background:none;border:none;font-size:.8rem;color:var(--muted);cursor:pointer;text-decoration:underline}
+
+/* ACTIVE DEMO BAR */
+#demoBar{display:none;background:linear-gradient(135deg,rgba(34,197,94,.15),rgba(14,165,233,.1));border:1px solid rgba(34,197,94,.3);border-radius:10px;padding:9px 14px;margin-bottom:12px;align-items:center;justify-content:space-between}
+#demoBar.show{display:flex}
+.demo-bar-left{font-size:.78rem;font-weight:600;color:var(--green)}
+.demo-bar-right{font-size:.72rem;color:var(--muted);font-weight:500}
+
+/* DIVIDER */
+.divider{display:flex;align-items:center;gap:10px;margin:16px 0}
+.divider-line{flex:1;height:1px;background:var(--border)}
+.divider-text{font-size:.72rem;color:var(--muted);white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="bg-orbs">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+</div>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-pill">
+      <div class="hero-pill-dot"></div>
+      AI Study Tool — Class 9–12 + College
+    </div>
+    <h1>Padhai ko <span class="grad">supercharge</span> karo</h1>
+    <p>Assignment likhao • Math solve karo • PYQ dhundo • PDF se questions banao</p>
+    <div class="feat-pills">
+      <span class="feat-pill">📝 Assignment AI</span>
+      <span class="feat-pill">🔢 Math Solver</span>
+      <span class="feat-pill">📄 PYQ Search</span>
+      <span class="feat-pill">📑 PDF → Questions</span>
+      <span class="feat-pill">✍️ Handwriting Style</span>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-num">4</div><div class="stat-lbl">AI Tools</div></div>
+    <div class="stat-box"><div class="stat-num">30s</div><div class="stat-lbl">Mein Ready</div></div>
+    <div class="stat-box"><div class="stat-num">14+</div><div class="stat-lbl">Boards</div></div>
+    <div class="stat-box"><div class="stat-num">∞</div><div class="stat-lbl">Unlimited</div></div>
+  </div>
+
+  <!-- 2-DAY DEMO BANNER -->
+  <div class="demo-banner" onclick="openDemoModal()">
+    <div class="demo-top">
+      <span class="demo-tag">🎁 FREE DEMO</span>
+      <span class="demo-timer" id="bannerTimer">48:00:00 baki hai</span>
+    </div>
+    <div class="demo-title">Pehle 2 din FREE try karo!</div>
+    <div class="demo-sub">Koi payment nahi chahiye — sab features unlock ho jayenge</div>
+    <button class="demo-btn" onclick="event.stopPropagation();openDemoModal()">🚀 2-Din Free Demo Shuru Karo</button>
+  </div>
+
+  <!-- PAYMENT GATE -->
+  <div id="payGate">
+    <div class="divider"><div class="divider-line"></div><div class="divider-text">ya payment karke lifetime unlock karo</div><div class="divider-line"></div></div>
+
+    <div class="gate-card">
+      <div class="gate-price-row">
+        <div class="gate-price">₹59</div>
+        <div class="gate-orig">₹499</div>
+        <div class="gate-badge">88% OFF</div>
+      </div>
+      <div class="gate-plan">⭐ PRO PLAN — HAR MAHINE</div>
+      <div class="gate-sub">Sare 4 AI tools + Unlimited + Monthly Updates</div>
+      <div class="feat-grid">
+        <div class="fg-item"><div class="fg-dot"></div>Assignment AI</div>
+        <div class="fg-item"><div class="fg-dot"></div>Math Solver</div>
+        <div class="fg-item"><div class="fg-dot"></div>PYQ 14 Boards</div>
+        <div class="fg-item"><div class="fg-dot"></div>PDF → Questions</div>
+        <div class="fg-item"><div class="fg-dot"></div>Handwriting Style</div>
+        <div class="fg-item"><div class="fg-dot"></div>Hindi + English</div>
+        <div class="fg-item"><div class="fg-dot"></div>Class 9–College</div>
+        <div class="fg-item"><div class="fg-dot"></div>Instant Unlock</div>
+      </div>
+      <div class="upi-box">
+        <div class="upi-label">UPI se Pay Karo</div>
+        <div class="upi-row">
+          <div class="upi-id" id="upiText">9277148543@nyes</div>
+          <button class="copy-upi" onclick="copyUPI()">Copy</button>
+        </div>
+        <div class="wp-note">Screenshot bhejo: <b>📱 +91-6393389492</b></div>
+      </div>
+      <input class="txn-input" type="text" id="txnInput" placeholder="UTR / Transaction ID daalo" maxlength="50">
+      <button class="unlock-btn" onclick="verifyPayment()">✅ Verify &amp; Unlock Karo</button>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="mainApp">
+
+    <!-- DEMO ACTIVE BAR -->
+    <div id="demoBar">
+      <div class="demo-bar-left">🎁 Demo Active</div>
+      <div class="demo-bar-right" id="demoBarTimer">Loading...</div>
+    </div>
+
+    <!-- KEY BAR -->
+    <div class="key-bar" onclick="openModal()">
+      <div class="key-dot off" id="keyDot"></div>
+      <span class="key-bar-text" id="keyText">⚠️ Groq API Key add karo (FREE)</span>
+      <button class="key-change">🔑 Set Key</button>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab(0)"><span class="tab-icon">📝</span>Write</div>
+      <div class="tab" onclick="switchTab(1)"><span class="tab-icon">🔢</span>Math</div>
+      <div class="tab" onclick="switchTab(2)"><span class="tab-icon">📄</span>PYQ</div>
+      <div class="tab" onclick="switchTab(3)"><span class="tab-icon">📑</span>PDF</div>
+    </div>
+
+    <!-- TAB 1: ASSIGNMENT -->
+    <div class="tab-panel active" id="panel0">
+      <div class="card">
+        <div class="card-accent"></div>
+        <h2><span class="card-icon">📝</span> Assignment Writer</h2>
+        <div class="field"><label>Subject</label>
+          <select id="asgSubject">
+            <option>Science (Vigyan)</option><option>Mathematics</option><option>Social Science</option>
+            <option>English</option><option>Hindi</option><option>History</option><option>Geography</option>
+            <option>Economics</option><option>Computer Science</option><option>Physics</option>
+            <option>Chemistry</option><option>Biology</option><option>Political Science</option><option>Business Studies</option>
+          </select>
+        </div>
+        <div class="field"><label>Class</label>
+          <select id="asgClass">
+            <option>Class 9</option><option>Class 10</option><option>Class 11</option><option>Class 12</option>
+            <option>College 1st Year</option><option>College 2nd Year</option>
+          </select>
+        </div>
+        <div class="field"><label>Topic / Question</label>
+          <textarea id="asgTopic" placeholder="Jaise: Photosynthesis kya hai? ya Newton ke laws..."></textarea>
+        </div>
+        <div class="field"><label>Language</label>
+          <select id="asgLang">
+            <option>Hinglish (Hindi + English mix)</option><option>Pure Hindi</option><option>Pure English</option>
+          </select>
+        </div>
+        <div class="field"><label>Output Style</label>
+          <div class="style-toggle">
+            <div class="sty-btn active" onclick="setSty(this,'normal','asgStyle','panel0')">📄 Normal Text</div>
+            <div class="sty-btn" onclick="setSty(this,'hw','asgStyle','panel0')">✍️ Handwriting</div>
+          </div>
+          <input type="hidden" id="asgStyle" value="normal">
+        </div>
+        <div class="field"><label>Length (Words)</label>
+          <div class="word-row">
+            <div class="word-btn active" onclick="setW(this,'150','asgWords')">150</div>
+            <div class="word-btn" onclick="setW(this,'300','asgWords')">300</div>
+            <div class="word-btn" onclick="setW(this,'500','asgWords')">500</div>
+            <div class="word-btn" onclick="setW(this,'800','asgWords')">800</div>
+          </div>
+          <input type="hidden" id="asgWords" value="150">
+        </div>
+        <button class="btn-orange" id="asgBtn" onclick="genAssignment()">✨ Assignment Banao</button>
+      </div>
+      <div class="loading-wrap" id="asgLoading"><div class="spinner"></div><p>Assignment likh raha hoon<span class="loading-dots"></span></p></div>
+      <div class="out-card" id="asgOut">
+        <div class="out-head"><span class="out-title">✅ Tumhara Assignment</span><button class="copy-btn2" onclick="copyOut('asgOutText')">📋 Copy</button></div>
+        <div class="out-text" id="asgOutText"></div>
+      </div>
+    </div>
+
+    <!-- TAB 2: MATH -->
+    <div class="tab-panel" id="panel1">
+      <div class="card">
+        <div class="card-accent"></div>
+        <h2><span class="card-icon">🔢</span> Math / Equation Solver</h2>
+        <div class="field"><label>Problem / Equation</label>
+          <textarea id="mathQ" placeholder="Jaise: 2x² + 5x - 3 = 0&#10;ya: sin²θ + cos²θ = 1 prove karo&#10;ya: Integration of x² dx&#10;ya: Pythagoras theorem explain karo"></textarea>
+        </div>
+        <div class="field"><label>Level</label>
+          <select id="mathLevel">
+            <option>Class 9-10 (Basic)</option>
+            <option>Class 11-12 (Intermediate)</option>
+            <option>College / JEE / Advanced</option>
+          </select>
+        </div>
+        <div class="field"><label>Output Style</label>
+          <div class="style-toggle">
+            <div class="sty-btn active" onclick="setSty(this,'normal','mathStyle','panel1')">📄 Normal</div>
+            <div class="sty-btn" onclick="setSty(this,'hw','mathStyle','panel1')">✍️ Handwriting</div>
+          </div>
+          <input type="hidden" id="mathStyle" value="normal">
+        </div>
+        <button class="btn-orange" id="mathBtn" onclick="solveMath()">🔍 Step-by-Step Solve Karo</button>
+      </div>
+      <div class="loading-wrap" id="mathLoading"><div class="spinner"></div><p>Equation solve ho rahi hai<span class="loading-dots"></span></p></div>
+      <div class="out-card" id="mathOut">
+        <div class="out-head"><span class="out-title">📐 Step-by-Step Solution</span><button class="copy-btn2" onclick="copyOut('mathOutText')">📋 Copy</button></div>
+        <div class="out-text" id="mathOutText"></div>
+      </div>
+    </div>
+
+    <!-- TAB 3: PYQ -->
+    <div class="tab-panel" id="panel2">
+      <div class="card">
+        <div class="card-accent"></div>
+        <h2><span class="card-icon">📄</span> PYQ Search</h2>
+        <div class="field"><label>Board</label>
+          <select id="pyqBoard">
+            <option>CBSE</option><option>UP Board</option><option>Bihar Board</option><option>MP Board</option>
+            <option>Rajasthan Board</option><option>Maharashtra Board</option><option>Gujarat Board</option>
+            <option>Karnataka Board</option><option>Tamil Nadu Board</option><option>AP Board</option>
+            <option>Telangana Board</option><option>ICSE</option><option>JEE Mains</option><option>NEET</option>
+          </select>
+        </div>
+        <div class="field"><label>Class</label>
+          <select id="pyqClass"><option>Class 10</option><option>Class 12</option><option>Class 9</option><option>Class 11</option></select>
+        </div>
+        <div class="field"><label>Subject</label>
+          <select id="pyqSubject">
+            <option>Mathematics</option><option>Science</option><option>English</option><option>Hindi</option>
+            <option>Social Science</option><option>Physics</option><option>Chemistry</option><option>Biology</option>
+            <option>History</option><option>Economics</option><option>Accountancy</option><option>Business Studies</option>
+          </select>
+        </div>
+        <div class="field"><label>Year</label>
+          <select id="pyqYear">
+            <option>2024</option><option>2023</option><option>2022</option><option>2021</option>
+            <option>2020</option><option>2019</option><option>2018</option>
+          </select>
+        </div>
+        <button class="btn-blue" onclick="searchPYQ()">🔎 PYQ Search Karo</button>
+      </div>
+      <div class="out-card" id="pyqOut" style="display:block">
+        <div class="out-head"><span class="out-title">🔗 Search Links</span></div>
+        <div id="pyqResults" style="font-size:.83rem;color:var(--muted)">Board, class, subject, year choose karo — phir search karo!</div>
+      </div>
+    </div>
+
+    <!-- TAB 4: PDF -->
+    <div class="tab-panel" id="panel3">
+      <div class="card">
+        <div class="card-accent"></div>
+        <h2><span class="card-icon">📑</span> PDF → AI Output</h2>
+        <div class="upload-zone" onclick="document.getElementById('pdfFile').click()">
+          <div class="upload-icon">📂</div>
+          <p>Apna PDF tap karke upload karo</p>
+          <label class="upload-label" onclick="event.stopPropagation()">📎 PDF Choose Karo</label>
+          <input type="file" id="pdfFile" accept=".pdf" onchange="loadPDF(this)">
+          <div id="pdfStatus"></div>
+        </div>
+      </div>
+      <div class="card" id="pdfOpts" style="display:none">
+        <div class="card-accent"></div>
+        <h2>⚙️ Kya Chahiye?</h2>
+        <div class="field"><label>Generate</label>
+          <select id="pdfAction">
+            <option value="questions">Practice Questions (MCQ + Short + Long)</option>
+            <option value="summary">Detailed Summary</option>
+            <option value="notes">Short Notes (Exam Ready)</option>
+            <option value="application">Application / Letter</option>
+            <option value="both">Questions + Summary Dono</option>
+          </select>
+        </div>
+        <div class="field"><label>Language</label>
+          <select id="pdfLang"><option>Hinglish</option><option>Pure Hindi</option><option>Pure English</option></select>
+        </div>
+        <div class="field"><label>Output Style</label>
+          <div class="style-toggle">
+            <div class="sty-btn active" onclick="setSty(this,'normal','pdfStyle','panel3')">📄 Normal</div>
+            <div class="sty-btn" onclick="setSty(this,'hw','pdfStyle','panel3')">✍️ Handwriting</div>
+          </div>
+          <input type="hidden" id="pdfStyle" value="normal">
+        </div>
+        <div class="hw-limit">
+          <div>
+            <div class="hw-limit-text">✍️ Handwriting limit: <span class="hw-limit-num" id="hwCount">0</span>/60 this month</div>
+            <div class="hw-bar"><div class="hw-bar-fill" id="hwBarFill" style="width:0%"></div></div>
+          </div>
+        </div>
+        <button class="btn-orange" id="pdfBtn" onclick="processPDF()">🚀 Generate Karo</button>
+      </div>
+      <div class="loading-wrap" id="pdfLoading"><div class="spinner"></div><p id="pdfLoadTxt">Processing<span class="loading-dots"></span></p></div>
+      <div class="out-card" id="pdfOut">
+        <div class="out-head"><span class="out-title" id="pdfOutTitle">✅ Result</span><button class="copy-btn2" onclick="copyOut('pdfOutText')">📋 Copy</button></div>
+        <div class="out-text" id="pdfOutText"></div>
+      </div>
+    </div>
+
+  </div><!-- mainApp end -->
+</div>
+
+<!-- API MODAL -->
+<div id="apiModal">
+  <div class="modal-box">
+    <h3>🔑 Groq API Key Set Karo</h3>
+    <p>FREE key milti hai — <a href="https://console.groq.com" target="_blank">console.groq.com</a> pe signup karo. Ek baar save karo, baar baar nahi daalni.</p>
+    <input class="modal-input" type="text" id="apiInput" placeholder="gsk_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+    <button class="modal-save" onclick="saveKey()">💾 Save Karo</button>
+    <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+  </div>
+</div>
+
+<!-- DEMO MODAL -->
+<div id="demoModal">
+  <div class="demo-modal-box">
+    <h3>🎁 2-Din FREE Demo</h3>
+    <p>Koi payment nahi chahiye! Sare features try karo 48 ghante tak — bilkul free.</p>
+    <div class="demo-features">
+      <div class="df-item"><span class="df-check">✓</span>Assignment AI</div>
+      <div class="df-item"><span class="df-check">✓</span>Math Solver</div>
+      <div class="df-item"><span class="df-check">✓</span>PYQ Search</div>
+      <div class="df-item"><span class="df-check">✓</span>PDF Questions</div>
+      <div class="df-item"><span class="df-check">✓</span>Handwriting</div>
+      <div class="df-item"><span class="df-check">✓</span>All Subjects</div>
+    </div>
+    <div class="demo-timer-big">
+      <div class="demo-timer-val" id="demoTimerDisplay">48:00:00</div>
+      <div class="demo-timer-lbl">Demo time remaining</div>
+    </div>
+    <button class="start-demo-btn" onclick="startDemo()">🚀 Demo Shuru Karo — Free!</button>
+    <button class="demo-cancel" onclick="closeDemoModal()">Baad mein try karunga</button>
+  </div>
+</div>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ── State ─────────────────────────────────────────────────────────
+const VALID_CODES=['DEMO123'];
+let API_KEY='', pdfText='', pdfName='', hwUsed=0;
+let demoInterval=null;
+
+// ── Init ──────────────────────────────────────────────────────────
+window.onload=function(){
+  // Check paid unlock
+  try{ if(localStorage.getItem('sai_unlocked')) unlockApp(false); }catch(e){}
+  // Check demo
+  try{
+    const demoEnd=localStorage.getItem('sai_demo_end');
+    if(demoEnd){
+      const left=parseInt(demoEnd)-Date.now();
+      if(left>0){ unlockApp(true); startDemoTimer(parseInt(demoEnd)); }
+      else{ localStorage.removeItem('sai_demo_end'); localStorage.removeItem('sai_demo_used'); }
+    }
+  }catch(e){}
+  // API key
+  try{ const k=localStorage.getItem('sai_key'); if(k){API_KEY=k;updateKeyBar(true);} }catch(e){}
+  // HW count
+  try{
+    hwUsed=parseInt(localStorage.getItem('sai_hw')||'0');
+    updateHWBar();
+  }catch(e){}
+  // Banner timer
+  updateBannerTimer();
+};
+
+// ── Demo ──────────────────────────────────────────────────────────
+function openDemoModal(){
+  // Check if already used
+  try{
+    if(localStorage.getItem('sai_demo_used')){
+      alert('⚠️ Demo pehle se use kar chuke ho!\n\n₹59/month mein unlock karo — lifetime access.');
+      return;
+    }
+  }catch(e){}
+  document.getElementById('demoModal').classList.add('open');
+}
+function closeDemoModal(){document.getElementById('demoModal').classList.remove('open');}
+
+function startDemo(){
+  try{
+    if(localStorage.getItem('sai_demo_used')){
+      alert('⚠️ Demo pehle se use ho chuka hai! Payment karke unlock karo.');
+      closeDemoModal();return;
+    }
+    const endTime=Date.now()+(48*60*60*1000);
+    localStorage.setItem('sai_demo_end',endTime);
+    localStorage.setItem('sai_demo_used','1');
+    closeDemoModal();
+    unlockApp(true);
+    startDemoTimer(endTime);
+    if(!API_KEY) setTimeout(openModal,500);
+  }catch(e){}
+}
+
+function startDemoTimer(endTime){
+  if(demoInterval) clearInterval(demoInterval);
+  function tick(){
+    const left=endTime-Date.now();
+    if(left<=0){
+      clearInterval(demoInterval);
+      document.getElementById('mainApp').style.display='none';
+      document.getElementById('payGate').style.display='block';
+      alert('⏰ Demo khatam ho gaya!\n\nSirf ₹59/month mein continue karo — payment karke unlock karo.');
+      return;
+    }
+    const h=Math.floor(left/3600000);
+    const m=Math.floor((left%3600000)/60000);
+    const s=Math.floor((left%60000)/1000);
+    const str=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    const el=document.getElementById('demoBarTimer');
+    if(el) el.textContent=`⏱️ ${str} baki hai`;
+    const dt=document.getElementById('demoTimerDisplay');
+    if(dt) dt.textContent=str;
+  }
+  tick();
+  demoInterval=setInterval(tick,1000);
+  const bar=document.getElementById('demoBar');
+  if(bar) bar.classList.add('show');
+}
+
+function updateBannerTimer(){
+  const el=document.getElementById('bannerTimer');
+  if(el) el.textContent='48:00:00 milenge';
+}
+
+// ── Payment ───────────────────────────────────────────────────────
+function copyUPI(){
+  const t=document.getElementById('upiText').textContent;
+  navigator.clipboard.writeText(t).catch(()=>{});
+  alert('✅ UPI ID copy ho gaya: '+t);
+}
+function verifyPayment(){
+  const txn=document.getElementById('txnInput').value.trim();
+  if(!txn){alert('⚠️ Transaction ID daalo!');return;}
+  let saved=[];
+  try{saved=JSON.parse(localStorage.getItem('validTxns')||'[]');}catch(e){}
+  if([...VALID_CODES,...saved].includes(txn)){
+    try{localStorage.setItem('sai_unlocked',txn);}catch(e){}
+    if(demoInterval){clearInterval(demoInterval);demoInterval=null;}
+    unlockApp(false);
+    if(!API_KEY) setTimeout(openModal,400);
+  } else {
+    alert('❌ ID match nahi hua!\nScreenshot bhejo: +91-6393389492\nManually unlock karenge 🙏');
+  }
+}
+function unlockApp(isDemo){
+  document.getElementById('payGate').style.display='none';
+  document.getElementById('mainApp').style.display='block';
+  if(isDemo){
+    document.getElementById('demoBar').classList.add('show');
+  }
+}
+
+// ── API Modal ─────────────────────────────────────────────────────
+function openModal(){document.getElementById('apiModal').classList.add('open');}
+function closeModal(){document.getElementById('apiModal').classList.remove('open');}
+document.getElementById('apiModal').onclick=function(e){if(e.target===this)closeModal();};
+function saveKey(){
+  const k=document.getElementById('apiInput').value.trim();
+  if(!k||!k.startsWith('gsk_')){alert('Valid Groq key daalo (gsk_ se shuru hoti hai)');return;}
+  API_KEY=k;
+  try{localStorage.setItem('sai_key',k);}catch(e){}
+  updateKeyBar(true);
+  closeModal();
+}
+function updateKeyBar(set){
+  document.getElementById('keyDot').className='key-dot '+(set?'on':'off');
+  document.getElementById('keyText').textContent=set?'✅ API Key set hai — change karo':'⚠️ Groq API Key add karo (FREE)';
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────
+function switchTab(i){
+  document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('active',j===i));
+  document.querySelectorAll('.tab-panel').forEach((p,j)=>p.classList.toggle('active',j===i));
+}
+
+// ── Helpers ───────────────────────────────────────────────────────
+function setW(el,v,id){
+  el.closest('.word-row').querySelectorAll('.word-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById(id).value=v;
+}
+function setSty(el,v,id,panel){
+  document.querySelectorAll('#'+panel+' .sty-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById(id).value=v;
+}
+function copyOut(id){
+  navigator.clipboard.writeText(document.getElementById(id).textContent)
+    .then(()=>alert('✅ Copy ho gaya! Paste karo 🎉')).catch(()=>{});
+}
+function updateHWBar(){
+  document.getElementById('hwCount').textContent=hwUsed;
+  const pct=Math.min((hwUsed/60)*100,100);
+  document.getElementById('hwBarFill').style.width=pct+'%';
+}
+function checkHW(){
+  if(hwUsed>=60){alert('✍️ Handwriting limit (60/month) khatam!\nNormal style mein generate karo.');return false;}
+  return true;
+}
+function incHW(){hwUsed++;try{localStorage.setItem('sai_hw',hwUsed);}catch(e){}updateHWBar();}
+
+// ── Groq API ──────────────────────────────────────────────────────
+async function callGroq(sys,user,tokens=1400){
+  if(!API_KEY){openModal();throw new Error('API key set nahi hai');}
+  const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+API_KEY},
+    body:JSON.stringify({
+      model:'llama-3.3-70b-versatile',
+      messages:[{role:'system',content:sys},{role:'user',content:user}],
+      max_tokens:tokens,temperature:0.45
+    })
+  });
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||'API Error '+r.status);}
+  const d=await r.json();
+  return d.choices?.[0]?.message?.content||'Koi response nahi mila.';
+}
+
+// ── Feature 1: Assignment ─────────────────────────────────────────
+async function genAssignment(){
+  const topic=document.getElementById('asgTopic').value.trim();
+  if(!topic){alert('Topic daalo!');return;}
+  if(!API_KEY){openModal();return;}
+  const sty=document.getElementById('asgStyle').value;
+  if(sty==='hw'&&!checkHW())return;
+  const sub=document.getElementById('asgSubject').value;
+  const cls=document.getElementById('asgClass').value;
+  const lang=document.getElementById('asgLang').value;
+  const words=document.getElementById('asgWords').value;
+  show('asgLoading');hide('asgOut');dis('asgBtn',true);
+  try{
+    const r=await callGroq(
+      `Tu expert teacher hai. ${cls}, ${sub} assignment likhta hai. Language: ${lang}. CBSE style. Structure: Introduction, numbered points, Conclusion, Summary.`,
+      `Assignment likho: "${topic}"\nWords: ~${words}`
+    );
+    setOut('asgOutText',r,sty==='hw');
+    show('asgOut');scroll('asgOut');
+    if(sty==='hw')incHW();
+  }catch(err){alert('❌ '+err.message);}
+  finally{hide('asgLoading');dis('asgBtn',false);}
+}
+
+// ── Feature 2: Math ───────────────────────────────────────────────
+async function solveMath(){
+  const q=document.getElementById('mathQ').value.trim();
+  if(!q){alert('Equation ya problem likho!');return;}
+  if(!API_KEY){openModal();return;}
+  const sty=document.getElementById('mathStyle').value;
+  if(sty==='hw'&&!checkHW())return;
+  const lvl=document.getElementById('mathLevel').value;
+  show('mathLoading');hide('mathOut');dis('mathBtn',true);
+  try{
+    const r=await callGroq(
+      `Tu expert math teacher hai (${lvl}). Hinglish mein step-by-step solve karo. Har step clearly label karo "Step 1:", "Step 2:". Final answer clearly likho. Formulas mention karo. Real life example bhi do.`,
+      `Solve karo:\n${q}`
+    );
+    setOut('mathOutText',r,sty==='hw');
+    show('mathOut');scroll('mathOut');
+    if(sty==='hw')incHW();
+  }catch(err){alert('❌ '+err.message);}
+  finally{hide('mathLoading');dis('mathBtn',false);}
+}
+
+// ── Feature 3: PYQ ────────────────────────────────────────────────
+function searchPYQ(){
+  const board=document.getElementById('pyqBoard').value;
+  const cls=document.getElementById('pyqClass').value;
+  const sub=document.getElementById('pyqSubject').value;
+  const yr=document.getElementById('pyqYear').value;
+  const q=encodeURIComponent(`${board} ${cls} ${sub} ${yr} question paper PDF`);
+  const links=[
+    {name:`Google — ${board} ${cls} ${sub} ${yr} Paper`,url:`https://www.google.com/search?q=${q}`,icon:'🔍'},
+    {name:`myCBSEguide — ${board} PYQ`,url:`https://mycbseguide.com/search/?q=${encodeURIComponent(board+' '+cls+' '+sub+' '+yr)}`,icon:'📘'},
+    {name:`BYJU'S — Previous Year Papers`,url:`https://byjus.com/cbse/previous-year-question-papers/${sub.toLowerCase().replace(/\s+/g,'-')}/`,icon:'📗'},
+    {name:`Vedantu — ${board} Papers`,url:`https://www.vedantu.com/previous-year-question-paper/${board.toLowerCase().replace(/\s+/g,'-')}-${cls.toLowerCase().replace(/\s+/g,'-')}`,icon:'📙'},
+    {name:`LearnCBSE — ${sub} ${yr}`,url:`https://www.google.com/search?q=${encodeURIComponent('site:learncbse.in '+board+' '+cls+' '+sub+' '+yr)}`,icon:'📕'},
+  ];
+  document.getElementById('pyqResults').innerHTML=
+    `<p style="font-size:.8rem;color:var(--muted);margin-bottom:10px">🔍 <b style="color:var(--text)">${board} ${cls} ${sub} ${yr}</b> — ${links.length} sources mile:</p>`
+    +links.map(l=>`<div class="pyq-item" onclick="window.open('${l.url}','_blank')">
+      <div class="pyq-name">${l.icon} ${l.name}</div>
+      <a class="pyq-link" href="${l.url}" target="_blank" onclick="event.stopPropagation()">🔗 Open</a>
+    </div>`).join('')
+    +`<p style="font-size:.72rem;color:var(--muted);margin-top:10px">💡 Kisi bhi link pe tap karo — seedha open hoga. Wahan se PDF download karo.</p>`;
+  show('pyqOut');
+}
+
+// ── Feature 4: PDF ────────────────────────────────────────────────
+async function loadPDF(input){
+  const file=input.files[0];
+  if(!file)return;
+  pdfText='';pdfName=file.name;
+  const st=document.getElementById('pdfStatus');
+  st.style.color='#3B82F6';st.textContent='⏳ PDF load ho raha hai...';
+  const reader=new FileReader();
+  reader.onload=async function(e){
+    try{
+      const pdf=await pdfjsLib.getDocument({data:e.target.result}).promise;
+      const total=pdf.numPages,pages=Math.min(total,25);
+      for(let i=1;i<=pages;i++){
+        st.textContent=`⏳ Page ${i}/${pages}...`;
+        const pg=await pdf.getPage(i);
+        const ct=await pg.getTextContent();
+        pdfText+=ct.items.map(s=>s.str).join(' ')+'\n';
+      }
+      st.style.color='#22C55E';st.textContent=`✅ "${file.name}" ready! (${total} pages)`;
+      document.getElementById('pdfOpts').style.display='block';
+    }catch(err){st.style.color='#EF4444';st.textContent='❌ PDF read nahi hua.';}
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+async function processPDF(){
+  if(!pdfText){alert('PDF upload karo pehle!');return;}
+  if(!API_KEY){openModal();return;}
+  const action=document.getElementById('pdfAction').value;
+  const lang=document.getElementById('pdfLang').value;
+  const sty=document.getElementById('pdfStyle').value;
+  if(sty==='hw'&&!checkHW())return;
+  show('pdfLoading');hide('pdfOut');dis('pdfBtn',true);
+  const ctx=pdfText.slice(0,6000);
+  const prompts={
+    questions:`Practice questions banao:\n- 5 MCQ (options ke saath, correct answer batao)\n- 5 Short Answer\n- 3 Long Answer\nLanguage: ${lang}`,
+    summary:`Detailed summary banao. Main topics, key points, important facts. Language: ${lang}`,
+    notes:`Exam-ready short notes banao. Bullet points. Important terms *bold* karo. Language: ${lang}`,
+    application:`Formal application/letter likho PDF ke content se. Proper format. Language: ${lang}`,
+    both:`Dono banao:\n1. SUMMARY: Main points.\n2. QUESTIONS: 3 MCQ + 3 Short + 2 Long.\nLanguage: ${lang}`
+  };
+  const titles={questions:'📋 Practice Questions',summary:'📝 Summary',notes:'📌 Short Notes',application:'✉️ Application',both:'📋 Questions + Summary'};
+  document.getElementById('pdfLoadTxt').innerHTML=`Processing "${pdfName}"<span class="loading-dots"></span>`;
+  try{
+    const r=await callGroq(
+      `Tu expert educator hai. PDF "${pdfName}" ka content neeche hai. Iske basis pe output banao.`,
+      `PDF:\n${ctx}\n\nTask: ${prompts[action]}`,1600
+    );
+    setOut('pdfOutText',r,sty==='hw');
+    document.getElementById('pdfOutTitle').textContent=titles[action];
+    show('pdfOut');scroll('pdfOut');
+    if(sty==='hw')incHW();
+  }catch(err){alert('❌ '+err.message);}
+  finally{hide('pdfLoading');dis('pdfBtn',false);}
+}
+
+// ── Utils ─────────────────────────────────────────────────────────
+function show(id){document.getElementById(id).style.display='block';}
+function hide(id){document.getElementById(id).style.display='none';}
+function dis(id,v){document.getElementById(id).disabled=v;}
+function scroll(id){document.getElementById(id).scrollIntoView({behavior:'smooth',block:'start'});}
+function setOut(id,text,isHW){
+  const el=document.getElementById(id);
+  el.textContent=text;
+  el.className='out-text'+(isHW?' hw':'');
+}
+</script>
+</body>
+</html>
